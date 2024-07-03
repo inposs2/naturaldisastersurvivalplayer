@@ -3,29 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>join natural dsiaster surviavl</title>
+    <title>aaa</title>
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
+        body {
+            font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            background-color: black;
+            margin-top: 50px;
         }
-        .fullscreen-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #counters {
+            margin-top: 20px;
         }
     </style>
-    <script type="text/javascript">
-        window.onload = function() {
-            window.location.href = "roblox-player:1+launchmode:play+gameinfo:65xco0S2mumcQvEzY4rTajgKF_Lf5wrGf9K4C5uPFHcUzIfAWxacoVAlHseMBd63jmhtpHlgfbMUP6D3Hc7OYtPH_s9fgfF3PczLdBFXwn5lZp92zp9fYvisCb-38Auy4tZWT_X6qRKxJ6xijdrc-JyKff6c6jIu5N5yEfmJMRyAYZo0fJ91lLiABzw-ozXAgEBtZaTKKXzT-3BWIbaM-Tbnnr51h35vlftONZANeIc+launchtime:1719459190645+placelauncherurl:https%3A%2F%2Fwww.roblox.com%2FGame%2FPlaceLauncher.ashx%3Frequest%3DRequestGame%26browserTrackerId%3D217861919100%26placeId%3D189707%26isPlayTogetherGame%3Dfalse%26joinAttemptId%3D63c99abe-dd9e-4f36-baa6-3e0ca1d91041%26joinAttemptOrigin%3DPlayButton+browsertrackerid:217861919100+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
-        }
-    </script>
 </head>
 <body>
-    <img src="https://i.ibb.co/8XwxHVX/press-the-open-roblox-button.png" alt="Press the open Roblox button" class="fullscreen-image">
+    <h1>aaa</h1>
+    <div id="buttons">
+        <button class="stockButton" data-type="Item1">Add Item1 Stock</button>
+        <button class="stockButton" data-type="Item2">Add Item2 Stock</button>
+        <button class="stockButton" data-type="Item3">Add Item3 Stock</button>
+        <button class="stockButton" data-type="Item4">Add Item4 Stock</button>
+        <button class="stockButton" data-type="Item5">Add Item5 Stock</button>
+    </div>
+    <div id="counters">
+        <p>Item1 Stock: <span id="Item1Counter">0</span></p>
+        <p>Item2 Stock: <span id="Item2Counter">0</span></p>
+        <p>Item3 Stock: <span id="Item3Counter">0</span></p>
+        <p>Item4 Stock: <span id="Item4Counter">0</span></p>
+        <p>Item5 Stock: <span id="Item5Counter">0</span></p>
+    </div>
+
+    <script>
+        const webhookUrl = 'YOUR_DISCORD_WEBHOOK_URL';  // Replace with your Discord webhook URL
+        const stockCounters = {
+            Item1: 0,
+            Item2: 0,
+            Item3: 0,
+            Item4: 0,
+            Item5: 0
+        };
+
+        // Function to get a cookie by name
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Function to set a cookie
+        function setCookie(name, value, days) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + d.toUTCString();
+            document.cookie = `${name}=${value}; ${expires}; path=/`;
+        }
+
+        // Load stock counters from cookies if they exist
+        window.onload = function() {
+            for (const type in stockCounters) {
+                const cookieValue = getCookie(type);
+                if (cookieValue) {
+                    stockCounters[type] = parseInt(cookieValue, 10);
+                    document.getElementById(`${type}Counter`).textContent = stockCounters[type];
+                }
+            }
+        };
+
+        // Add event listeners to buttons
+        document.querySelectorAll('.stockButton').forEach(button => {
+            button.addEventListener('click', () => {
+                const type = button.getAttribute('data-type');
+                stockCounters[type]++;
+                document.getElementById(`${type}Counter`).textContent = stockCounters[type];
+                setCookie(type, stockCounters[type], 365); // Save to cookie for 1 year
+                sendWebhook(type, stockCounters[type]);
+            });
+        });
+
+        function sendWebhook(type, stock) {
+            const data = {
+                content: '',
+                embeds: [{
+                    title: `+1 ${type} Stock!`,
+                    description: `Stock = ${stock}`,
+                    color: getColor(type)
+                }]
+            };
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                if (response.ok) {
+                    console.log(`${type} stock updated: ${stock}`);
+                } else {
+                    console.error('Failed to send webhook', response.statusText);
+                }
+            }).catch(error => {
+                console.error('Error sending webhook', error);
+            });
+        }
+
+        function getColor(type) {
+            switch(type) {
+                case 'Item1': return 0xff0000; // Red
+                case 'Item2': return 0x00ff00; // Green
+                case 'Item3': return 0x0000ff; // Blue
+                case 'Item4': return 0xffff00; // Yellow
+                case 'Item5': return 0xff00ff; // Magenta
+                default: return 0xffffff; // White
+            }
+        }
+    </script>
 </body>
 </html>
